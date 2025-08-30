@@ -1,12 +1,13 @@
-from ..utils.generation import random_secure_string
+from ..utils.generation import random_secure_string, generate_safe_image
 from ..utils.misc import flagify_from_cli
 from ..utils.verification import cli_tools_admin_login_required
 from ..queries.admin import create_admin, admins_exist
 from ..queries.seeding import drop_table, create_table
+from ..queries.item import get_items, create_item
 from ..app import app
 
 from enum import Flag, auto
-import click
+import click, json
 """
     Flag summary:
         SEED_ALL: this is default. Seeds all the database tables
@@ -15,6 +16,20 @@ import click
 
         PRESERVE: Preserve the current values in the tables (Not available for admins table)
         JUST_DROP: Just drops all the tables without seeding data
+
+    Image Seed data:
+        Should be a json file relative path from the home directory (~)
+
+        in the form:
+
+            { 
+         1: {
+             "img": location of image from home directory (~)
+                 "title": title: Str (max 32 characters),
+                 "price": price: float
+                 }.
+             2: ...
+            }
 """
 
 class SeederFlags(Flag):
@@ -32,7 +47,7 @@ class Seeder():
     def seed(self):
         if not self.flags or SeederFlags.SEED_ALL in self.flags:
             if self.flags and SeederFlags.JUST_DROP in self.flags:
-                self._drop()
+                self._drop('admins', 'items')
 
             elif self.flags and SeederFlags.PRESERVE in self.flags:
                 self._seed_item(preserve=True)
@@ -44,7 +59,7 @@ class Seeder():
 
         if SeederFlags.ADMIN_ONLY in self.flags:
             if SeederFlags.JUST_DROP in self.flags:
-                self._drop(item=False)
+                self._drop('admins')
             else:
                 self._seed_admin()
 
@@ -52,7 +67,7 @@ class Seeder():
 
         if SeederFlags.ITEM_ONLY in self.flags:
             if SeederFlags.JUST_DROP in self.flags:
-                self._drop(admin=False)
+                self._drop('items')
             elif SeederFlags.PRESERVE in self.flags:
                 self._seed_item(preserve=True)
             else:
@@ -62,49 +77,31 @@ class Seeder():
 
         print("Unrecognised flags.")
 
-    def _drop(self, admin=True, item=True):
-        print("Dropping tables...")
+    def _drop(self, *args):
+        print(f"Dropping tables {args}")
         fails = []
-        if admin:
+        for tablename in args:
             try:
-                drop_table("admins")
-                print("Dropped 'admins'.")
+                drop_table(tablename)
+                print(f"Dropped '{tablename}'.")
             except ValueError as e:
                 print(e)
-                print("Failed to drop 'admins'. Skipping...")
-                fails.append('admins')
-
-        if item:
-            try:
-                drop_table("items")
-                print("Dropped 'items'.")
-            except ValueError as e:
-                print(e)
-                print("Failed to drop 'items'. Skipping...")
-                fails.append('items')
+                print(f"Failed to drop '{tablename}'. Skipping...")
+                fails.append(tablename)
 
         return fails
 
-    def _create(self, admin=True, item=True):
-        print("Creating tables...")
+    def _create(self, *args):
+        print("Creating tables {args}")
         fails = []
-        if admin:
+        for tablename in args:
             try:
-                create_table("admins")
-                print("Created 'admins'.")
+                create_table(tablename)
+                print(f"Created '{tablename}'.")
             except ValueError as e:
                 print(e)
-                print("Failed to create 'admins'. Skipping...")
-                fails.append('admins')
-
-        if item:
-            try:
-                create_table("items")
-                print("Created 'items'.")
-            except ValueError as e:
-                print(e)
-                print("Failed to create 'items'. Skipping...")
-                fails.append('items')
+                print(f"Failed to create '{tablename}'. Skipping...")
+                fails.append(tablename)
 
         return fails
 
@@ -118,10 +115,10 @@ class Seeder():
             print("Aborting...")
             return
 
-        if 'admins' in self._drop(item=False):
+        if 'admins' in self._drop('admins'):
             print("Failed to seed 'admins'. Skipping...")
             return 
-        if 'admins' in self._create(item=False):
+        if 'admins' in self._create('admins'):
             print("Failed to seed 'admins'. Skipping...")
             return
 
@@ -148,9 +145,32 @@ class Seeder():
             print("'items' needs a source file to seed from. No default provided.")
             return
 
-        print("Not Implemented.")
+        if not preserve:
+            if 'items' in self._drop('items'):
+                print("Failed to seed 'items'. Skipping...")
+                return
+            if 'items' in self._create('items'):
+                print("Failed to seed 'items'. Skipping...")
+                return
 
+        with open(self.file, "rb") as f:
+            seed_data = json.loads(f)
 
+        current_items = [x.title for x in get_items()]
+
+        for item in seed_data.items():
+            if item['title'] in current_items:
+                continue
+
+            try:
+                img_path = generate_safe_image(item['img'])
+                create_item(item['title'], img_path, item['price'])
+            except ValueError as e:
+                print(e)
+                print("Failed to seed 'items'")
+                return
+
+        
 # ==== Command ====
 
 @app.cli.command("seed")
