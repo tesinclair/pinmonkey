@@ -1,5 +1,6 @@
 from ..models.Item import Item
 from ..app import get_session
+from ..utils.validation import inputs_exist
 
 from sqlalchemy import select
 
@@ -21,11 +22,13 @@ def get_items():
     return items
 
 def create_item(title: str, img: str, price: float):
+    inputs_exist(title, img, price)
     with get_session().begin() as s:
         a = Item(title=title, img=img, price=price)
         s.add(a)
 
 def delete_item(id: int):
+    inputs_exist(id)
     with get_session().begin() as s:
         item = s.get(Item, id)
 
@@ -35,6 +38,7 @@ def delete_item(id: int):
         s.delete(item)
 
 def edit_item_price(id: int, new_price: float):
+    inputs_exist(id, new_price)
     with get_session().begin() as s:
         item = s.get(Item, id)
 
@@ -44,6 +48,7 @@ def edit_item_price(id: int, new_price: float):
         item.price = new_price
         
 def edit_item_title(id: int, new_title: str):
+    inputs_exist(id, new_title)
     with get_session().begin() as s:
         item = s.get(Item, id)
 
@@ -53,6 +58,7 @@ def edit_item_title(id: int, new_title: str):
         item.title = new_title
 
 def edit_item_img(id: int, new_img: str):
+    inputs_exist(id, new_img)
     with get_session().begin() as s:
         item = s.get(Item, id)
 
