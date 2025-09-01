@@ -68,11 +68,11 @@
     content: '';
     position: absolute;
     z-index: -1;
-    width: calc(100% + 3rem);
+    width: 10rem;
     height: 5ch;
     background-color: var(--bs-body-bg);
     top: var(--nav-slider-offset);
-    right: calc(-50%);
+    left: -1rem;
     border-radius: 2rem 0 0 2rem;
     transition: all .2s linear;
 }

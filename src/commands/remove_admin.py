@@ -1,9 +1,12 @@
 from ..utils.verification import cli_tools_admin_login_required
 from ..queries.admin import remove_admin
 from flask import current_app
+from flask.cli import with_appcontext
 import time
+import click
 
-@current_app.cli.command("remove-admin")
+@click.command("remove-admin")
+@with_appcontext
 @cli_tools_admin_login_required
 def cli_tools_remove_admin():
     TIMEOUT = 7 * 60

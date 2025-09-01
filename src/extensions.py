@@ -6,7 +6,7 @@ class Base(DeclarativeBase):
 
 def db_init(uri: str):
     engine = create_engine(uri, echo=True, future=True)
-    Session = sessionmaker(engine)
+    Session = sessionmaker(engine, expire_on_commit=False)
 
     from .models import Item
     Base.metadata.create_all(engine)

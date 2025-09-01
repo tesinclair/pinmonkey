@@ -1,16 +1,17 @@
 from ..utils.generation import random_secure_string, generate_safe_image
-from ..utils.misc import flagify_from_cli
+from ..utils.misc import flagify_from_cli, remove_current_images
 from ..utils.verification import cli_tools_admin_login_required
 from ..queries.admin import create_admin, admins_exist
 from ..queries.seeding import drop_table, create_table
 from ..queries.item import get_items, create_item
+from flask.cli import with_appcontext
 from flask import current_app
 
 from enum import Flag, auto
-import click, json
+import click, json, os
 """
     Flag summary:
-        SEED_ALL: this is default. Seeds all the database tables
+        SEED_ALL: Required if using other flags (e.g. PRESERVE) but want all tables seeded
         ADMIN_ONLY: only seed the admin table
         ITEM_ONLY: Only seed the item table
 
@@ -23,26 +24,27 @@ import click, json
         in the form:
 
             { 
-         1: {
-             "img": location of image from home directory (~)
+             1: {
+                 "img": location of image from home directory (~)
                  "title": title: Str (max 32 characters),
                  "price": price: float
-                 }.
+                 },
              2: ...
             }
 """
 
 class SeederFlags(Flag):
-    SEED_ALL = auto() # not ever required, added for clarity
+    SEED_ALL = auto() # only required if other flags are used
     ADMIN_ONLY = auto()
     ITEM_ONLY = auto()
     PRESERVE = auto()
     JUST_DROP = auto()
+    REMOVE_SRC_IMAGES = auto()
 
 class Seeder():
     def __init__(self, flags=None, file=None):
         self.flags = flags
-        self.file = file
+        self.file = os.path.expanduser(file)
 
     def seed(self):
         if not self.flags or SeederFlags.SEED_ALL in self.flags:
@@ -50,10 +52,16 @@ class Seeder():
                 self._drop('admins', 'items')
 
             elif self.flags and SeederFlags.PRESERVE in self.flags:
+                print("==== Seeding 'items' ====")
                 self._seed_item(preserve=True)
+                print("==== Seeding 'admin' ====")
+                self._seed_admin()
 
             else:
+                print("==== Seeding 'items' ====")
                 self._seed_item()
+                print("==== Seeding 'admins' ====")
+                self._seed_admin()
 
             return
 
@@ -142,6 +150,7 @@ class Seeder():
         
 
     def _seed_item(self, preserve=False):
+        print("Attempting to seed 'itmes'")
         if self.file is None:
             print("'items' needs a source file to seed from. No default provided.")
             return
@@ -150,22 +159,26 @@ class Seeder():
             if 'items' in self._drop('items'):
                 print("Failed to seed 'items'. Skipping...")
                 return
+            remove_current_images()
             if 'items' in self._create('items'):
                 print("Failed to seed 'items'. Skipping...")
                 return
 
         with open(self.file, "rb") as f:
-            seed_data = json.loads(f)
+            seed_data = json.loads(f.read())
 
         current_items = [x.title for x in get_items(current_app.config.get('DB_SESSION'))]
 
-        for item in seed_data.items():
+        for item in seed_data.values():
             if item['title'] in current_items:
                 continue
 
             try:
-                img_path = generate_safe_image(item['img'])
-                create_item(current_app.config.get('DB_SESSION'), item['title'], img_path, item['price'])
+                if SeederFlags.REMOVE_SRC_IMAGES in self.flags:
+                    img_filename = generate_safe_image(item['img'], remove=True)
+                else:
+                    img_filename = generate_safe_image(item['img'])
+                create_item(current_app.config.get('DB_SESSION'), item['title'], img_filename, item['price'])
             except ValueError as e:
                 print(e)
                 print("Failed to seed 'items'")
@@ -174,10 +187,11 @@ class Seeder():
         
 # ==== Command ====
 
-@current_app.cli.command("seed")
-@current_app.option('--flags', multiple=True, callback=flagify_from_cli, type=click.Choice(SeederFlags, case_sensitive=False))
-@current_app.option('--file')
-def seed(flags, file):
+@click.command("seed")
+@click.option('--flags', multiple=True, callback=flagify_from_cli, type=click.Choice(SeederFlags, case_sensitive=False))
+@click.option('--file')
+@with_appcontext
+def cli_tools_seed(flags, file):
     seeder = Seeder(flags, file)
 
     try: 
@@ -188,5 +202,5 @@ def seed(flags, file):
 
     except ValueError as e:
         print(e)
-        print("Failed to being seeding. Aborting...")
+        print("Failed to begin seeding. Aborting...")
         

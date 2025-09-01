@@ -1,10 +1,12 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, session
 from .extensions import db_init
 from .routes.shop import shop_bp
 from .routes.basket import basket_bp 
 from .routes.home import home_bp
 from .routes.checkout import checkout_bp
-from .commands import *
+from .commands.seed import cli_tools_seed
+from .commands.create_admin import cli_tools_create_admin
+from .commands.remove_admin import cli_tools_remove_admin
 
 from dotenv import dotenv_values
 import os, sys
@@ -25,7 +27,7 @@ if not SECRET_KEY:
 
 app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = SECRET_KEY
-
+app.config['IMAGE_FOLDER'] = IMAGE_FOLDER
 app.config['DB_SESSION'], app.config['DB_ENGINE'] = db_init(DATABASE_URL)
 
 app.register_blueprint(shop_bp, url_prefix="/shop")
@@ -33,6 +35,12 @@ app.register_blueprint(basket_bp, url_prefix="/basket")
 app.register_blueprint(home_bp, url_prefix="/home")
 app.register_blueprint(checkout_bp, url_prefix="/checkout")
 
+app.cli.add_command(cli_tools_seed)
+app.cli.add_command(cli_tools_create_admin)
+app.cli.add_command(cli_tools_remove_admin)
+
+
 @app.route('/')
 def root():
+    session['basket'] = []
     return redirect(url_for('home.home'))

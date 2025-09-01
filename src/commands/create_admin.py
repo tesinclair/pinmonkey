@@ -4,8 +4,11 @@ from ..utils.validation import validate_password, PasswordValidationError
 from ..queries.admin import create_admin
 from getpass import getpass
 import time
+import click
+from flask.cli import with_appcontext
 
-@current_app.cli.command("create-admin")
+@click.command("create-admin")
+@with_appcontext
 @cli_tools_admin_login_required
 def cli_tools_create_admin():
     TIMEOUT = 7 * 60

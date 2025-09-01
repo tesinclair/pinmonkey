@@ -3,14 +3,14 @@
     <div class="shop">
         <h2>Shop</h2>
         <div class="row row-cols-3">
-            {% for item in items %}
+            {% for img, title, price, id in items %}
                 <div class="col card border-primary">
-                    <img src="{{ item.img }}" class="card-img-top" alt="{{ item.title }}">
+                    <img src="{{ url_for('static', filename='images/' ~ img) }}" class="card-img-top" alt="{{ title }}">
                     <div class="card-body">
-                        <div class="shop-card-title"> {{ item.title }} </div>
-                        <div class="shop-card-price"> {{ item.price }} </div>
+                        <div class="shop-card-title"> {{ title }} </div>
+                        <div class="shop-card-price"> {{ price }} </div>
                         <form method="post">
-                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <input type="hidden" name="item_id" value="{{ id }}">
                             <button type="submit" class="shop-card-btn btn btn-primary">
                                 ADD TO BASKET
                             </button>
