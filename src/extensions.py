@@ -1,10 +1,10 @@
-from sqlalchemy import create_engine, DeclarativeBase
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine 
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 class Base(DeclarativeBase):
     pass
 
-db_init(uri: str):
+def db_init(uri: str):
     engine = create_engine(uri, echo=True, future=True)
     Session = sessionmaker(engine)
 
@@ -12,4 +12,3 @@ db_init(uri: str):
     Base.metadata.create_all(engine)
 
     return Session, engine
-

@@ -1,0 +1,78 @@
+@media screen and (max-width: 768px){
+    .minimize div *:not(.pinmonkey-logo){
+        visibility: hidden;
+    }
+
+    .pinmonkey-logo{
+        height: 2rem;
+        aspect-ratio: 1;
+    }
+    
+    .minimize:has(.toggled-menu) div *{
+        visibility: visible;
+    }
+    .minimize:has(.toggled-menu){
+    }
+}
+
+.sidebar div{
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media screen and (min-width: 768px){
+    .pinmonkey-logo{
+        height: 3.5rem;
+        aspect-ratio: 1;
+    }
+}
+
+@media screen and (min-width: 1230px){
+    .pinmonkey-logo{
+        height: 5rem;
+        aspect-ratio: 1;
+    }
+}
+
+.nav{
+    margin-top: 3rem;
+}
+
+.nav a{
+    margin-bottom: .5rem;
+    padding: .5rem;
+    color: var(--bs-secondary);
+    text-decoration: none;
+    font-weight: bold;
+    transition: all .1s linear;
+}
+
+.nav a:not(.current-tab):hover{
+    transform: translateX(.5rem);
+}
+
+.current-tab{
+    color: var(--bs-primary) !important;
+    border-radius: 50%;
+    width: 100%;
+    transform: translateX(1rem);
+    position: relative;
+    isolation: isolate;
+
+    --nav-slider-offset: 0;
+}
+
+.current-tab::before{
+    content: '';
+    position: absolute;
+    z-index: -1;
+    width: calc(100% + 3rem);
+    height: 5ch;
+    background-color: var(--bs-body-bg);
+    top: var(--nav-slider-offset);
+    right: calc(-50%);
+    border-radius: 2rem 0 0 2rem;
+    transition: all .2s linear;
+}

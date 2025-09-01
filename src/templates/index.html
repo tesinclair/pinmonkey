@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Pinmonkey</title>
+
+        <link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='third_party/bootstrap/bootstrap.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}" />
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <nav class="col-1 d-md-block bg-primary sidebar minimize">
+                    <div class="position-sticky pt-3 nav-cont">
+                        <img class="pinmonkey-logo" src="{{ url_for('static', filename='icons/pinmonkey.svg') }}">
+                        <div class="nav">
+                            <a class="nav-item {{ home_t }}" href="{{ url_for('home.home') }}">Home</a>
+                            <a class="nav-item {{ shop_t }}" href="{{ url_for('shop.shop') }}">Shop</a>
+                            <a class="nav-item {{ basket_t }}" href="{{ url_for('basket.basket') }}">Basket</a>
+                        </div>
+                    </div>
+                </nav>
+                <main class="col-11 ms-sm-auto px-md-4">
+                    {% block content %}{% endblock %}
+                    {% block scripts %}{% endblock %}
+                </main> 
+            </div>
+        </div>
+        <script src="{{ url_for('static', filename='third_party/bootstrap/bootstrap.js') }}"></script>
+        <script>
+            document.querySelector('.pinmonkey-logo')?.addEventListener('click', () => {
+                document.querySelector('.nav-cont')?.classList.toggle('toggled-menu');
+            });
+
+            const tabs = document.querySelectorAll('.nav-item');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', e => {
+                    e.preventDefault();
+                    const prevTab = document.querySelector('.current-tab');
+                    const currTab = e.currentTarget
+
+                    if (prevTab === currTab) return;
+
+                    const offset = prevTab.getBoundingClientRect().top - currTab.getBoundingClientRect().top;
+                    
+                    tabs.forEach(t => {
+                        t.classList.remove('current-tab');
+                    });
+                    
+
+                    currTab.style.setProperty('--nav-slider-offset', `${offset}px`);
+                    currTab.classList.add('current-tab');
+
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            currTab.style.setProperty('--nav-slider-offset', 0);
+                        });
+                    });
+
+                    // let animation play before relocating
+                    setTimeout(() => {
+                        window.location = e.target.href;
+                    }, 200);
+                });
+            });
+        </script>
+    </body>
+</html>
+
+

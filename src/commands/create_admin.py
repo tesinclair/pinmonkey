@@ -1,11 +1,11 @@
+from flask import current_app
 from ..utils.verification import cli_tools_admin_login_required
 from ..utils.validation import validate_password, PasswordValidationError
 from ..queries.admin import create_admin
 from getpass import getpass
-from ..app import app
 import time
 
-@app.cli.command("create-admin")
+@current_app.cli.command("create-admin")
 @cli_tools_admin_login_required
 def cli_tools_create_admin():
     TIMEOUT = 7 * 60
@@ -46,7 +46,7 @@ def cli_tools_create_admin():
             continue
 
         try:
-            create_admin(username, password)
+            create_admin(current_app.config.get('DB_SESSION'), username, password)
         except ValueError as e:
             print("Invalid Field: ", e)
             continue

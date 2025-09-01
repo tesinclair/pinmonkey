@@ -1,9 +1,9 @@
 from ..utils.verification import cli_tools_admin_login_required
 from ..queries.admin import remove_admin
-from ..app import app
+from flask import current_app
 import time
 
-@app.cli.command("remove-admin")
+@current_app.cli.command("remove-admin")
 @cli_tools_admin_login_required
 def cli_tools_remove_admin():
     TIMEOUT = 7 * 60
@@ -23,7 +23,7 @@ def cli_tools_remove_admin():
             break
 
         try:
-            remove_admin(username)
+            remove_admin(current_app.config.get('DB_SESSION'), username)
         except ValueError as e:
             print("Error: ", e)
             print("Try again.")

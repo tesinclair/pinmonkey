@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+{% block content %}
+    <div class="shop">
+        <h2>Checkout</h2>
+        <ul>
+            {% for item in basket %}
+                <li>
+                    <div class="shop-card-title"> {{ item.title }} </div>
+                    <div class="shop-card-price"> {{ item.price }} </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+
+
+
+
+

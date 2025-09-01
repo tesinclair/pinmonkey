@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+{% block content %}
+    <div class="shop">
+        <h2>Shop</h2>
+        <div class="row row-cols-3">
+            {% for item in items %}
+                <div class="col card border-primary">
+                    <img src="{{ item.img }}" class="card-img-top" alt="{{ item.title }}">
+                    <div class="card-body">
+                        <div class="shop-card-title"> {{ item.title }} </div>
+                        <div class="shop-card-price"> {{ item.price }} </div>
+                        <form method="post">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <button type="submit" class="shop-card-btn btn btn-primary">
+                                ADD TO BASKET
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+
+

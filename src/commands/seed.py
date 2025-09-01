@@ -4,7 +4,7 @@ from ..utils.verification import cli_tools_admin_login_required
 from ..queries.admin import create_admin, admins_exist
 from ..queries.seeding import drop_table, create_table
 from ..queries.item import get_items, create_item
-from ..app import app
+from flask import current_app
 
 from enum import Flag, auto
 import click, json
@@ -82,7 +82,7 @@ class Seeder():
         fails = []
         for tablename in args:
             try:
-                drop_table(tablename)
+                drop_table(current_app.config.get('DB_ENGINE'), tablename)
                 print(f"Dropped '{tablename}'.")
             except ValueError as e:
                 print(e)
@@ -96,7 +96,7 @@ class Seeder():
         fails = []
         for tablename in args:
             try:
-                create_table(tablename)
+                create_table(current_app.config.get('DB_ENGINE'), tablename)
                 print(f"Created '{tablename}'.")
             except ValueError as e:
                 print(e)
@@ -111,6 +111,7 @@ class Seeder():
         print("This should only be used on initial creation of the database, or as a LAST RESORT.")
         print("=================")
         print("Are you certain you understand what this means and would like to proceed (case sensitive). [YES/n]")
+        print()
         if input() != "YES":
             print("Aborting...")
             return
@@ -125,7 +126,7 @@ class Seeder():
         password = random_secure_string()
 
         try:
-            create_admin(username="MASTER", password=password)
+            create_admin(current_app.config.get('DB_SESSION'), username="MASTER", password=password)
             print("MASTER admin created")
             print()
         except ValueError as e:
@@ -156,7 +157,7 @@ class Seeder():
         with open(self.file, "rb") as f:
             seed_data = json.loads(f)
 
-        current_items = [x.title for x in get_items()]
+        current_items = [x.title for x in get_items(current_app.config.get('DB_SESSION'))]
 
         for item in seed_data.items():
             if item['title'] in current_items:
@@ -164,7 +165,7 @@ class Seeder():
 
             try:
                 img_path = generate_safe_image(item['img'])
-                create_item(item['title'], img_path, item['price'])
+                create_item(current_app.config.get('DB_SESSION'), item['title'], img_path, item['price'])
             except ValueError as e:
                 print(e)
                 print("Failed to seed 'items'")
@@ -173,14 +174,14 @@ class Seeder():
         
 # ==== Command ====
 
-@app.cli.command("seed")
-@app.option('--flags', multiple=True, callback=flagify_from_cli, type=click.Choice(SeederFlags, case_sensitive=False))
-@app.option('--file')
+@current_app.cli.command("seed")
+@current_app.option('--flags', multiple=True, callback=flagify_from_cli, type=click.Choice(SeederFlags, case_sensitive=False))
+@current_app.option('--file')
 def seed(flags, file):
     seeder = Seeder(flags, file)
 
     try: 
-        if admins_exist(): # If non default admins exist, user must login to seed
+        if admins_exist(current_app.config.get('DB_SESSION')): # If non default admins exist, user must login to seed
             cli_tools_admin_login_required(seeder.seed())
         else:
             seeder.seed()
