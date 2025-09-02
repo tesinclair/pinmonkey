@@ -44,11 +44,11 @@ def isitem(session, id: int):
 
     return bool(item)
 
-def create_item(session, title: str, img: str, price: float):
+def create_item(session, title: str, img: str, price: float, stock: int):
     inputs_exist(session, title, img, price)
     with session() as s:
         with s.begin():
-            a = Item(title=title, img=img, price=price)
+            a = Item(title=title, img=img, price=price, stock=stock)
             s.add(a)
 
 def delete_item(session, id: int):
@@ -83,6 +83,17 @@ def edit_item_title(session, id: int, new_title: str):
                 raise ValueError("No such item exists")
 
             item.title = new_title
+
+def edit_item_stock(session, id: int, new_stock: int):
+    inputs_exist(session, id, new_stock)
+    with session() as s:
+        with s.begin():
+            item = s.get(Item, id)
+
+            if not item:
+                raise ValueError("No such item exists")
+
+            item.stock = new_stock
 
 def edit_item_img(session, id: int, new_img: str):
     inputs_exist(session, id, new_img)

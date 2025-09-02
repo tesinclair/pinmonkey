@@ -68,7 +68,7 @@
     content: '';
     position: absolute;
     z-index: -1;
-    width: 10rem;
+    width: 20rem;
     height: 5ch;
     background-color: var(--bs-body-bg);
     top: var(--nav-slider-offset);
@@ -76,3 +76,105 @@
     border-radius: 2rem 0 0 2rem;
     transition: all .2s linear;
 }
+
+.card{
+    width: 15rem;
+    height: 22rem;
+    padding: 0;
+    margin-right: .5rem;
+}
+
+.card img{
+    border-radius: .375rem;
+    width: 100%;
+    height: 75%;
+}
+
+h2{
+    text-align: center;
+    margin-top: 2rem;
+    font-weight: bold;
+    font-size: 4ch;
+}
+
+.content{
+    margin-inline: 10rem;
+    margin-block: 1rem;
+}
+
+.shop-card{
+    position: relative;
+    overflow: hidden;
+
+    transition: scale .3s ease;
+}
+
+.shop-card-price,
+.shop-card-btn{
+    position: absolute;
+    left: calc(-100%);
+    transition: all .3s ease;
+}
+
+.shop-card-title{
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    font-weight: bold;
+    font-size: 2ch;
+    transition: all .3s ease;
+    text-wrap: nowrap;
+}
+
+.shop-card-stock{
+    position: absolute;
+    right: 0;
+    bottom: calc(-100%);
+    transition: all .2s ease;
+    font-size: 1ch;
+}
+
+.shop-card-stock:hover{
+    font-size: 1.5ch;
+}
+
+.shop-card:hover .shop-card-stock,
+.shop-card:focus .shop-card-stock{
+    bottom: 0;
+}
+
+.shop-card:hover,
+.shop-card:focus{
+    scale: 1.01;
+}
+.shop-card:hover .shop-card-title,
+.shop-card:focus .shop-card-title{
+    font-size: 1.75ch;
+}
+.shop-card:hover div *,
+.shop-card:focus div *{
+    transform: translate(0, 0);
+    left: 1rem;
+}
+
+.shop-card-btn{
+    bottom: 5rem;
+}
+
+.shop-card-price{
+    bottom: 1.5rem;
+}
+
+@media screen and (max-width: 1250px){
+    .content{
+        margin-inline: 2rem;
+    }
+}
+
+.checkout-success{
+    display: flex;
+    justify-context: center;
+    align-items: center;
+    flex-direction: column;
+}
+    

@@ -178,7 +178,7 @@ class Seeder():
                     img_filename = generate_safe_image(item['img'], remove=True)
                 else:
                     img_filename = generate_safe_image(item['img'])
-                create_item(current_app.config.get('DB_SESSION'), item['title'], img_filename, item['price'])
+                create_item(current_app.config.get('DB_SESSION'), item['title'], img_filename, item['price'], item['stock'])
             except ValueError as e:
                 print(e)
                 print("Failed to seed 'items'")

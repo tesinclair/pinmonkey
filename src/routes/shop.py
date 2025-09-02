@@ -19,13 +19,27 @@ def shop():
         except ValueError as e:
             return jsonify({'error': e}), 400
 
-        session['basket'].append(item_id)
-        session.modified = True
+        basket = session.get('basket', [])
+        found = False
+
+        for i, (id, q) in enumerate(basket):
+            if id == item_id:
+                basket[i] = (id, q + 1)
+                found = True
+                break
+
+        if not found:
+            basket.append((item_id, 1))
+
+        session['basket'] = basket
+        
+        return jsonify({'success', 'item added to basket'}), 200
 
     items = []
+
     try:
         items = get_items(current_app.config.get('DB_SESSION'))
-        items = [(x.img, x.title, x.price, x.id) for x in items]
+        items = [(x.img, x.title, x.price, x.id, x.stock) for x in items]
     except ValueError as e:
         print(e)
         return redirect(url_for('home.home'))

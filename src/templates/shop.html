@@ -2,24 +2,51 @@
 {% block content %}
     <div class="shop">
         <h2>Shop</h2>
-        <div class="row row-cols-3">
-            {% for img, title, price, id in items %}
-                <div class="col card border-primary">
+        <div class="content row row-cols-3 justify-content-center">
+            {% for img, title, price, id, stock in items %}
+                <div class="col shop-card card border-primary">
                     <img src="{{ url_for('static', filename='images/' ~ img) }}" class="card-img-top" alt="{{ title }}">
                     <div class="card-body">
                         <div class="shop-card-title"> {{ title }} </div>
                         <div class="shop-card-price"> {{ price }} </div>
-                        <form method="post">
-                            <input type="hidden" name="item_id" value="{{ id }}">
-                            <button type="submit" class="shop-card-btn btn btn-primary">
-                                ADD TO BASKET
-                            </button>
-                        </form>
+                        {% if stock <= 0 %}
+                        <button class="shop-card-btn btn btn-primary disabled">OUT OF STOCK</button>
+                        {% else %}
+                        <button onclick="addToBasket({{ id }})" class="shop-card-btn btn btn-primary">
+                            ADD TO BASKET
+                        </button>
+                        {% endif %}
                     </div>
+                    <span class="shop-card-stock muted-text">Stock: {{ stock }}</span>
                 </div>
             {% endfor %}
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
+<script>
+    async function addToBasket(id){
+        const req = new FormData();
+
+        req.append("item_id", id);
+
+        try{
+            const res = await fetch({{ url_for('shop.shop') }}, {
+                method: "POST",
+                body: req,
+            });
+
+            data = await res.json();
+
+            if (res.status != 200){
+                console.error(data);
+                return;
+            }
+        } catch (e){
+            console.error(e);
+        }
+    }
+</script>
 {% endblock %}
 
 

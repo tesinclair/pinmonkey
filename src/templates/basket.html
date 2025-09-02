@@ -1,28 +1,68 @@
 {% extends "index.html" %}
 {% block content %}
-    <div class="shop">
+    <div class="basket">
         <h2>Basket</h2>
-        <div class="row row-cols-3">
+        <div class="content row row-cols-3 justify-content-center">
             {% if items|length <= 0 %}
                 <span>Nothing in your basket yet.</span>
             {% else %}
-            {% for img, title, price, id in items %}
+            {% for img, title, price, id, quantity in items %}
                 <div class="col card border-primary">
                     <img src="{{ url_for('static', filename='images/' ~ img) }}" class="card-img-top" alt="{{ title }}">
                     <div class="card-body">
-                        <div class="shop-card-title"> {{ title }} </div>
-                        <div class="shop-card-price"> {{ price }} </div>
+                        <div class="basket-card-title"> {{ title }} </div>
+                        <div class="basket-card-price"> {{ price }} </div>
+                    </div>
+                    <div class="card-footer">
+                        <div id="quantity-{{ id }}" class="basket-card-quantity text-muted"> {{ quantity }} </div>
+                        <button onclick="updateBasket({{ id }}, -1)"> - </button>
+                        <button onclick="updateBasket({{ id }}, 1)"> + </button>
+                        <button onclick="removeItem({{ id }})">Remove</button>
                     </div>
                 </div>
             {% endfor %}
             {% endif %}
         </div>
         {% if items|length > 0 %}
-        <a class="btn btn-primary" href="{{ url_for('checkout.checkout') }}"> Checkout </a>
+        <div class="d-flex justify-content-center">
+            <a class="btn btn-primary" href="{{ url_for('checkout.checkout') }}"> Checkout </a>
+        </div>
         {% endif %}
     </div>
 {% endblock %}
 
+{% block scripts %}
+<script>
+    async function updateBasket(id, inc){
+        quantityEl = document.getElementById(`quantity-${id}`);
+        new_quan = parseInt(quantityEl.innerHTML) + inc;
 
+        const req = new FormData();
 
+        req.append("item_id", id);
+        req.append("new_quantity", new_quan);
 
+        try{
+            const res = await fetch({{ url_for('basket.basket') }}, {
+                method: "POST",
+                body: req,
+            });
+
+            data = await res.json();
+
+            if (res.status != 200){
+                console.error(data);
+                return;
+            }
+            
+            quantityEl.innerHTML = new_quan;
+
+        } catch (e){
+            console.error(e);
+        }
+    }
+
+    function removeItem(id){
+    }
+</script>
+{% endblock %}

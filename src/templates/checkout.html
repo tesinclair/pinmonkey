@@ -2,15 +2,42 @@
 {% block content %}
     <div class="shop">
         <h2>Checkout</h2>
-        <ul>
-            {% for item in basket %}
-                <li>
-                    <div class="shop-card-title"> {{ item.title }} </div>
-                    <div class="shop-card-price"> {{ item.price }} </div>
-                </li>
-            {% endfor %}
-        </ul>
+        <div id="stripe-checkout">
+        </div>
     </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        var stripe = Stripe("{{ stripe_pub_key }}");
+
+        const createCheckoutSession = async () => {
+            const res = await fetch("{{ url_for('checkout.create_checkout_session') }}");
+            const data = await res.json();
+
+            if (res.status != 200){
+                console.error("Failed to get checkout session");
+                return;
+            }
+
+            console.log(data);
+
+            return data.client_secret;
+        };
+
+        const fetchClientSecret = async () => {
+            const clientSecret = await createCheckoutSession();
+            return clientSecret;
+        };
+
+        const wrapInitEmbeddedCheckout = async () => {
+            const checkout = await stripe.initEmbeddedCheckout({
+                fetchClientSecret,
+            });
+            checkout.mount('#stripe-checkout')
+        }
+
+        document.addEventListener('DOMContentLoaded', wrapInitEmbeddedCheckout);
+    </script>
 {% endblock %}
 
 

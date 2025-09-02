@@ -24,11 +24,14 @@
                 </nav>
                 <main class="col-11 ms-sm-auto px-md-4">
                     {% block content %}{% endblock %}
-                    {% block scripts %}{% endblock %}
                 </main> 
             </div>
         </div>
         <script src="{{ url_for('static', filename='third_party/bootstrap/bootstrap.js') }}"></script>
+        <script src="https://js.stripe.com/basil/stripe.js"></script>
+        
+        {% block scripts %}{% endblock %}
+
         <script>
             document.querySelector('.pinmonkey-logo')?.addEventListener('click', () => {
                 document.querySelector('.nav-cont')?.classList.toggle('toggled-menu');
@@ -41,6 +44,12 @@
                     e.preventDefault();
                     const prevTab = document.querySelector('.current-tab');
                     const currTab = e.currentTarget
+
+                    if (!prevTab){
+                        currTab.classList.add('current-tab');
+                        window.location = e.target.href;
+                        return;
+                    }
 
                     if (prevTab === currTab) return;
 

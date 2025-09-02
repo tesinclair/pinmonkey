@@ -8,6 +8,8 @@ from .commands.seed import cli_tools_seed
 from .commands.create_admin import cli_tools_create_admin
 from .commands.remove_admin import cli_tools_remove_admin
 
+from stripe import StripeClient
+
 from dotenv import dotenv_values
 import os, sys
 
@@ -20,8 +22,10 @@ DATABASE_URL = 'sqlite:///' + os.path.join(BASE_DIR, 'pinmonkey.db')
 PM_CONF = dotenv_values('../pinmonkey.env')
 
 SECRET_KEY = PM_CONF.get('PM_FLASK_SECRET')
+STRIPE_SECRET_KEY = PM_CONF.get('PM_STRIPE_SECRET')
+STRIPE_PUB_KEY = PM_CONF.get('PM_STRIPE_PUB_KEY')
 
-if not SECRET_KEY:
+if not SECRET_KEY or not STRIPE_SECRET_KEY or not STRIPE_PUB_KEY:
     print("ERROR: No secret key")
     sys.exit(1)
 
@@ -29,6 +33,8 @@ app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['IMAGE_FOLDER'] = IMAGE_FOLDER
 app.config['DB_SESSION'], app.config['DB_ENGINE'] = db_init(DATABASE_URL)
+app.config['STRIPE_PRIV_KEY'] = STRIPE_SECRET_KEY
+app.config['STRIPE_PUB_KEY'] = STRIPE_PUB_KEY
 
 app.register_blueprint(shop_bp, url_prefix="/shop")
 app.register_blueprint(basket_bp, url_prefix="/basket")

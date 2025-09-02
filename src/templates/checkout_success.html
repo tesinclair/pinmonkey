@@ -1,0 +1,13 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+<div class="checkout-success">
+    <span>Checked out successfully!</span>
+    <span>We'll get your things to you shortly.</span>
+    <a class="btn btn-primary" href="{{ url_for('shop.shop') }}">BACK TO SHOP</a>
+</div>
+
+{% endblock %}
+
+
