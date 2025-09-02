@@ -46,7 +46,7 @@ def basket():
         abort(404)
 
 @basket_bp.route('/remove', methods=['POST'])
-def basket_remove_item():
+def basket_remove():
     item_id = request.form.get('item_id')
 
     if item_id is None:

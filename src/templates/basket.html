@@ -7,7 +7,7 @@
                 <span>Nothing in your basket yet.</span>
             {% else %}
             {% for img, title, price, id, quantity in items %}
-                <div class="col card border-primary">
+            <div class="col card border-primary" id="card-{{ id }}">
                     <img src="{{ url_for('static', filename='images/' ~ img) }}" class="card-img-top" alt="{{ title }}">
                     <div class="card-body">
                         <div class="basket-card-title"> {{ title }} </div>
@@ -15,9 +15,11 @@
                     </div>
                     <div class="card-footer">
                         <div id="quantity-{{ id }}" class="basket-card-quantity text-muted"> {{ quantity }} </div>
-                        <button onclick="updateBasket({{ id }}, -1)"> - </button>
-                        <button onclick="updateBasket({{ id }}, 1)"> + </button>
-                        <button onclick="removeItem({{ id }})">Remove</button>
+                        <div class="basket-quantity-btns">
+                            <button class="btn quan-update-btn" onclick="updateBasket({{ id }}, -1)"> - </button>
+                            <button class="btn quan-update-btn" onclick="updateBasket({{ id }}, 1)"> + </button>
+                            <button class="btn btn-primary" onclick="removeItem({{ id }})">Remove</button>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
@@ -37,13 +39,18 @@
         quantityEl = document.getElementById(`quantity-${id}`);
         new_quan = parseInt(quantityEl.innerHTML) + inc;
 
+        if (new_quan <= 0){
+            removeItem(id);
+            return;
+        }
+
         const req = new FormData();
 
         req.append("item_id", id);
         req.append("new_quantity", new_quan);
 
         try{
-            const res = await fetch({{ url_for('basket.basket') }}, {
+            const res = await fetch("{{ url_for('basket.basket') }}", {
                 method: "POST",
                 body: req,
             });
@@ -62,7 +69,28 @@
         }
     }
 
-    function removeItem(id){
+    async function removeItem(id){
+        const req = new FormData();
+        req.append("item_id", id);
+        try{
+            const res = await fetch("{{ url_for('basket.basket_remove') }}", {
+                method: "POST",
+                body: req,
+            });
+
+            data = await res.json();
+
+            if (res.status != 200){
+                console.error(data);
+                return;
+            }
+
+        location.reload();
+
+        } catch (e){
+            console.error(e);
+        }
+
     }
 </script>
 {% endblock %}

@@ -102,9 +102,11 @@ h2{
     margin-block: 1rem;
 }
 
+.card{
+    overflow: hidden;
+}
 .shop-card{
     position: relative;
-    overflow: hidden;
 
     transition: scale .3s ease;
 }
@@ -177,4 +179,13 @@ h2{
     align-items: center;
     flex-direction: column;
 }
-    
+
+.basket-quantity-btns{
+    position: absolute;
+    right: .5rem;
+    bottom: .1rem;
+}
+
+.quan-update-btn:hover{
+    color: var(--bs-secondary);
+}
