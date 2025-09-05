@@ -1,6 +1,7 @@
 venv/
 __pycache__/
 src/static/images/*
+src/tmp
 
 .env/
 

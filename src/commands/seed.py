@@ -44,7 +44,10 @@ class SeederFlags(Flag):
 class Seeder():
     def __init__(self, flags=None, file=None):
         self.flags = flags
-        self.file = os.path.expanduser(file)
+        if file:
+            self.file = os.path.expanduser(file)
+        else:
+            self.file = file
 
     def seed(self):
         if not self.flags or SeederFlags.SEED_ALL in self.flags:

@@ -8,6 +8,7 @@
         <link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='third_party/bootstrap/bootstrap.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}" />
+        <script src="{{ url_for('static', filename='js/pm_alert.js') }}"></script>
     </head>
     <body>
         <div class="container-fluid">
@@ -16,18 +17,25 @@
                     <div class="position-sticky pt-3 nav-cont">
                         <img class="pinmonkey-logo" src="{{ url_for('static', filename='icons/pinmonkey.svg') }}">
                         <div class="nav">
+                            {% if session.get('admin_logged_in') %}
+                            <a class="nav-item {{ dash_t }}" href="{{ url_for('admin.dash') }}">Dash</a>
+                            <a class="nav-item {{ add_item_t }}" href="{{ url_for('admin.add_item') }}">Add Item</a>
+                            <a class="nav-item" href="{{ url_for('admin.logout') }}">Logout</a>
+                            {% else %}
                             <a class="nav-item {{ home_t }}" href="{{ url_for('home.home') }}">Home</a>
                             <a class="nav-item {{ shop_t }}" href="{{ url_for('shop.shop') }}">Shop</a>
                             <a class="nav-item {{ basket_t }}" href="{{ url_for('basket.basket') }}">Basket</a>
+                            {% endif %}
                         </div>
                     </div>
                 </nav>
-                <main class="col-11 ms-sm-auto px-md-4">
+                <main id="main" class="col-11 ms-sm-auto px-md-4">
                     {% block content %}{% endblock %}
                 </main> 
             </div>
         </div>
         <script src="{{ url_for('static', filename='third_party/bootstrap/bootstrap.js') }}"></script>
+        <script src="{{ url_for('static', filename='third_party/bootstrap/bootstrap.bundle.js') }}"></script>
         <script src="https://js.stripe.com/basil/stripe.js"></script>
         
         {% block scripts %}{% endblock %}

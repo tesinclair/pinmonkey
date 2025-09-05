@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, abort, session, jsonify, current_app, url_for
+from flask import Blueprint, render_template, abort, session, jsonify, current_app, url_for, redirect
 from jinja2 import TemplateNotFound
 import stripe
 from ..queries.item import get_item, edit_item_stock
@@ -15,22 +15,7 @@ def checkout():
 @checkout_bp.route('/success', methods=['GET'])
 def checkout_success():
     try:
-        if session.get('basket') is None:
-            return redirect(url_for('shop.shop'))
-
-        for item_id, q in session.get('basket'):
-            try:
-                item = get_item(current_app.config.get('DB_SESSION'), item_id)
-                if not item:
-                    print(f"[WARN]: /checkout/success -> item with id {item_id} doesn't exist")
-                    continue
-
-                edit_item_stock(current_app.config.get('DB_SESSION'), item_id, max(item.stock - q, 0))
-            except ValueError as e:
-                print(f"[ERROR]: /checkout/success -> item with id {item_id} raises ValueError: {e}.")
-
         session['basket'] = []
-
         return render_template("checkout_success.html")
     except TemplateNotFound:
         abort(404)
@@ -47,22 +32,27 @@ def create_checkout_session():
     for item_id, q in basket:
         item = get_item(current_app.config.get('DB_SESSION'), item_id)
 
-        new_quan = min(item.stock - q, q)
-        if new_quan == 0:
+        q = min(item.stock, q)
+        if q <= 0:
             continue
-
-        q = new_quan
 
         line_items.append({
             'price_data': {
                 'currency': 'gbp',
                 'product_data': {
                     'name': item.title,
+                    'metadata': {
+                        'item_id': item.id
+                    }
                 },
                 'unit_amount': int(item.price * 100),
             },
             'quantity': q,
         })
+
+    if len(line_items) <= 0:
+        print(f"[WARN]: /checkout/create-session -> No line items. Info:\n\tItem -> {item.title}\n\tStock -> {item.stock}\n\tQuantity -> {q}")
+        return jsonify({'error': 'No items in basket'}), 400
 
     stripe.api_key = current_app.config.get('STRIPE_PRIV_KEY');
 

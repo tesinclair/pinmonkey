@@ -62,6 +62,20 @@ def delete_item(session, id: int):
 
             s.delete(item)
 
+def update_item(session, id: int, new_title: str, new_stock: int, new_price: float):
+    inputs_exist(session, id, new_title, new_stock, new_price)
+
+    with session() as s:
+        with s.begin():
+            item = s.get(Item, id)
+
+            if not item:
+                raise ValueError("No such item exists")
+
+            item.title = new_title
+            item.stock = new_stock
+            item.price = new_price
+
 def edit_item_price(session, id: int, new_price: float):
     inputs_exist(session, id, new_price)
     with session() as s:
@@ -94,15 +108,4 @@ def edit_item_stock(session, id: int, new_stock: int):
                 raise ValueError("No such item exists")
 
             item.stock = new_stock
-
-def edit_item_img(session, id: int, new_img: str):
-    inputs_exist(session, id, new_img)
-    with session() as s:
-        with s.begin():
-            item = s.get(Item, id)
-
-            if not item:
-                raise ValueError("No such item exists")
-
-            item.img = new_img
 

@@ -1,0 +1,167 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="dash">
+    <h2> Admin Dashboard </h2>
+    <div id="alert-cont"></div>
+    <div class="content row row-cols-3 justify-content-center">
+        {% for img, title, price, id, stock in items %}
+        <div class="col">
+            <form action="{{ url_for('admin.update_item') }}" id="dash-card" class="shop-card card border-primary" method="post">
+                <img src="{{ url_for('static', filename='images/' ~ img) }}" class="card-img-top" alt="{{ title }}">
+                <div class="card-body">
+                    <div class="shop-card-title dash-form">
+                        <input 
+                            item_id="{{ id }}"
+                            type="text"
+                            class="form-control-plaintext"
+                            value="{{title}}"
+                            name="title"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Click to edit"
+                            >
+                    </div>
+                    <div class="shop-card-price dash-form"> 
+                        <input 
+                            item_id="{{ id }}"
+                            type="text"
+                            class="form-control-plaintext"
+                            value="{{ price }}"
+                            name="price"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Click to edit"
+                        >
+                    </div>
+                </div>
+                <span class="shop-card-stock dash-form">
+                    Stock: <input 
+                                item_id="{{ id }}"
+                                type="text"
+                                class="form-control-plaintext"
+                                value="{{ stock }}"
+                                name="stock"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Click to edit"
+                            >
+                </span>
+                <div id="card-footer-{{ id }}" class="card-footer d-none dash">
+                    <button class="btn btn-primary" type="submit">
+                        Update Item
+                    </button>
+                </div>
+                <input type="hidden" value="{{ id }}" name="item_id">
+            </form>
+            <button class="item-delete btn btn-primary" onclick="deleteItem({{ id }})">DELETE</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            trigger: 'hover'
+        })
+    })
+
+    inputs = document.querySelectorAll("input");
+
+    inputs?.forEach(input => {
+        input.addEventListener('change', (e) => {
+            e.preventDefault();
+            document.querySelector(`#card-footer-${e.target.getAttribute('item_id')}`).classList.remove('d-none');
+        });
+    });
+
+    async function deleteItem(id){
+        const formData = new FormData();
+
+        formData.append('id', id);
+
+        try{
+            const res = await fetch("{{ url_for('admin.delete_item')}}", {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            switch(res.status){
+                case (200):
+                    try{
+                        pm_alert(
+                            document.getElementById('alert-cont'),
+                            {
+                                type: "success", 
+                                title: "Success!", 
+                                message: "Item deleted successfully"
+                            }
+                        );
+                    } catch(e){
+                        console.error(e);
+                    }
+                    break;
+                case (400):
+                default:
+                    try{
+                        pm_alert(
+                            document.getElementById('alert-cont'),
+                            { message: data.error }
+                        );
+                    } catch(e){
+                        console.error(e);
+                    }
+                    if (res.status != 400){
+                        console.error("Unrecognised status code: ", res.status);
+                        console.log(data);
+                    }
+            }
+
+        } catch(e) {
+            console.error(e);
+            pm_alert(document.getElementById('alert-cont'));
+        }
+    }
+
+    form = document.querySelector('#dash-card');
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        try{
+            const res = await fetch(form.action, {
+                method: form.method,
+                body: formData
+            });
+
+            const data = await res.json();
+
+            switch(res.status){
+                case (200):
+                    pm_alert(
+                        document.getElementById('alert-cont'),
+                        type="success", 
+                        title="Success!", 
+                        message="Changed successfully",
+                    );
+                    break;
+                case (400):
+                default:
+                    pm_alert(document.getElementById('alert-cont'));
+                    if (res.status != 400){
+                        console.error("Unrecognised status code: ", res.status);
+                        console.log(data);
+                    }
+            }
+        } catch (e){
+            console.error(e);
+            pm_alert(document.getElementById('alert-cont'));
+        }
+    });
+</script>
+{% endblock %}

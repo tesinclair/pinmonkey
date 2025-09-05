@@ -1,0 +1,117 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="add-item">
+    <h2> Add Item </h2>
+    <div id="alert-cont"></div>
+    <form method="post" id="add-item-form" enctype="multipart/form-data" action="{{ url_for('admin.add_item') }}">
+        <div class="mb-3">
+            <label for="add-img" class="form-label">Add Image:</label>
+            <input type="file" class="form-control" name="img" id="add-img" required>
+        </div>
+        <div class="mb-3">
+            <label for="image-title" class="form-label">Title:</label>
+            <input id="item-title" type="text" class="form-control" name="title" placeholder="Title" required>
+        </div>
+        <div class="mb-3">
+            <label for="image-price" class="form-label">Price:</label>
+            <input id="item-price" type="text" class="form-control" name="price" placeholder="Price" required>
+        </div>
+        <div class="mb-3">
+            <label for="image-stock" class="form-label">Stock:</label>
+            <input id="item-stock" type="text" class="form-control" name="stock" placeholder="Stock" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Item</button>
+    </form>
+    <div class="demo-card">
+        <h3>Demo</h3>
+        <div class="col shop-card card border-primary">
+            <img src="" class="card-img-top" alt="demo-img">
+            <div class="card-body">
+                <div class="shop-card-title">Demo Title</div>
+                <div class="shop-card-price">[price]</div>
+                <button onclick="" class="shop-card-btn btn btn-primary">
+                    ADD TO BASKET
+                </button>
+            </div>
+            <span class="shop-card-stock muted-text">Stock: [stock]</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const updateDemoCard = () => {
+       const img = document.getElementById('add-img').files[0];
+       const cardImg = document.querySelector('.card-img-top');
+       cardImg.src = img ? window.URL.createObjectURL(img) : "";
+       
+       const title = document.getElementById('item-title');
+       const cardTitle = document.querySelector('.shop-card-title');
+       cardTitle.innerHTML = !["Title", ""].includes(title.value) ? title.value : "Demo Title";
+       
+       const price = document.getElementById('item-price');
+       const cardPrice = document.querySelector('.shop-card-price');
+       cardPrice.innerHTML = !["Price", ""].includes(price.value) ? price.value : "[price]";
+       
+       const stock = document.getElementById('item-stock');
+       const cardStock = document.querySelector('.shop-card-stock');
+       cardStock.innerHTML = !["Stock", ""].includes(stock.value) ? `Stock: ${stock.value}` : "Stock: [stock]";
+    };
+
+    window.addEventListener('load', updateDemoCard);
+    document.querySelectorAll('.form-control').forEach(el => {
+       el.addEventListener('input', updateDemoCard);
+    });
+
+    const form = document.querySelector('#add-item-form');
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        try{
+            const res = await fetch(form.action, {
+                method: form.method,
+                body: formData
+            });
+
+            const data = await res.json();
+
+            switch(res.status){
+                case (200):
+                    try{
+                        pm_alert(
+                            document.getElementById('alert-cont'),
+                            {
+                                type: "success", 
+                                title: "Success!", 
+                                message: data.success
+                            }
+                        );
+                    } catch(e){
+                        console.error(e);
+                    }
+                    break;
+                case (400):
+                default:
+                    try{
+                        pm_alert(document.getElementById('alert-cont'), {message: data.error});
+                    } catch(e){
+                        console.error(e);
+                    }
+
+                    if (res.status != 400){
+                        console.error("Unrecognised status code: ", res.status);
+                        console.log(data);
+                    }
+            }
+        } catch (e){
+            console.error(e);
+            pm_alert(document.getElementById('alert-cont'));
+        }
+    });
+
+</script>
+{% endblock %}
+

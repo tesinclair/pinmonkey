@@ -33,7 +33,7 @@ def shop():
 
         session['basket'] = basket
         
-        return jsonify({'success', 'item added to basket'}), 200
+        return jsonify({'success': 'item added to basket'}), 200
 
     items = []
 

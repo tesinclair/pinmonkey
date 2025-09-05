@@ -38,7 +38,7 @@ start_flask
 # Watch for changes
 echo "Watching for changes in $WATCH_DIR..."
 inotifywait -m -r -e modify,create,delete,move "$WATCH_DIR" \
---exclude '(\.git|__pycache__|\.pyc|\.db|\.sqlite|\.log|^\.?/static/uploads/)' |
+--exclude '(\.git|__pycache__|\.pyc|\.db|\.sqlite|\.log|^\.?/static/images/|^\.?/tmp/)' |
 while read -r directory events filename; do
     echo "Change detected: $filename"
     stop_flask

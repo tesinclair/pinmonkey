@@ -47,6 +47,7 @@
     text-decoration: none;
     font-weight: bold;
     transition: all .1s linear;
+    text-wrap: nowrap;
 }
 
 .nav a:not(.current-tab):hover{
@@ -64,11 +65,16 @@
     --nav-slider-offset: 0;
 }
 
+@media screen and (min-width: 2000px){
+    .current-tab::before{
+        width: 20rem;
+    }
+}
 .current-tab::before{
     content: '';
     position: absolute;
     z-index: -1;
-    width: 20rem;
+    width: 10rem;
     height: 5ch;
     background-color: var(--bs-body-bg);
     top: var(--nav-slider-offset);
@@ -95,6 +101,11 @@ h2{
     margin-top: 2rem;
     font-weight: bold;
     font-size: 4ch;
+}
+
+h3{
+    text-align: center;
+    font-weight: bold;
 }
 
 .content{
@@ -128,6 +139,41 @@ h2{
     text-wrap: nowrap;
 }
 
+.shop-card-title:is(.dash-form){
+    bottom: 3rem;
+}
+
+.shop-card-title input{
+    font-weight: bold;
+    font-size: 2ch;
+    text-wrap: nowrap;
+}
+
+.dash-form, .dash-form input{
+    color: var(--bs-secondary);
+    display: inline;
+}
+
+.shop-card-price:is(.dash-form){
+    left: .1rem;
+    bottom: .1rem;
+}
+
+.shop-card-stock:is(.dash-form){
+    font-size: 1.5ch;
+    bottom: .1rem;
+    right: .1rem;
+}
+
+.shop-card-stock:is(.dash-form) input{
+    width: 2ch;
+}
+.shop-card-price:is(.dash-form) input{
+    width: 4ch;
+}
+.shop-card-price:is(.dash-form) input:focus{
+    width: 100%;
+}
 .shop-card-stock{
     position: absolute;
     right: 0;
@@ -149,12 +195,12 @@ h2{
 .shop-card:focus{
     scale: 1.01;
 }
-.shop-card:hover .shop-card-title,
-.shop-card:focus .shop-card-title{
+.shop-card:hover .shop-card-title:is(:not(.dash-form)),
+.shop-card:focus .shop-card-title:is(:not(.dash-form)){
     font-size: 1.75ch;
 }
-.shop-card:hover div *,
-.shop-card:focus div *{
+.shop-card:is(:not(#dash-card)):hover div *,
+.shop-card:is(:not(#dash-card)):focus div *{
     transform: translate(0, 0);
     left: 1rem;
 }
@@ -178,6 +224,7 @@ h2{
     justify-context: center;
     align-items: center;
     flex-direction: column;
+    height: 30svh;
 }
 
 .basket-quantity-btns{
@@ -188,4 +235,64 @@ h2{
 
 .quan-update-btn:hover{
     color: var(--bs-secondary);
+}
+
+.admin-login-form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: .5rem;
+    margin-top: 5rem;
+}
+
+.card-footer:is(.dash){
+    display: flex;
+    justify-content: center;
+}
+
+.item-delete{
+    margin-top: .25rem;
+}
+
+.add-item{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.add-item form{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    justify-content: center;
+}
+
+.demo-card{
+    position: relative;
+    margin-top: 2rem;
+}
+.demo-card > div::after{
+    content: 'hover';
+    position: absolute;
+    width: 3rem;
+    height: 1rem;
+    color: rgb(60, 60, 60);
+    left: 50%;
+    top: .1rem;
+    transform-origin: center;
+    transform: translate(-50%, 0);
+    transition: top .3s ease-in-out;
+    animation: grow 2s linear infinite;
+}
+
+@keyframes grow{
+    0% {scale: 1;}
+    25% {scale: 1.1;}
+    50% {scale: 1;}
+}
+
+.demo-card > div:hover::after{
+    top: calc(-100%);
 }

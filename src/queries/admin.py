@@ -42,7 +42,7 @@ def admins_exist(session, include_default=False):
 
 def create_admin(session, username: str, password: str):
     inputs_exist(session, username, password)
-    if get_admin(username):
+    if get_admin(session, username):
         raise ValueError("Admin with username already exists")
 
     with session() as s:
@@ -53,13 +53,13 @@ def create_admin(session, username: str, password: str):
     # Ensure 'Master' admin is removed
     if username != "MASTER":
         try:
-            remove_admin("MASTER")
+            remove_admin(session, "MASTER")
         except ValueError:
             pass
 
 def remove_admin(session, username: str):
     inputs_exist(session, username)
-    admin = get_admin(username)
+    admin = get_admin(session, username)
     if not admin:
         raise ValueError("No such admin")
 

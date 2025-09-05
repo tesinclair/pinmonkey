@@ -1,6 +1,6 @@
 {% extends "index.html" %}
 {% block content %}
-    <div class="shop">
+    <div class="checkout">
         <h2>Checkout</h2>
         <div id="stripe-checkout">
         </div>
@@ -15,11 +15,9 @@
             const data = await res.json();
 
             if (res.status != 200){
-                console.error("Failed to get checkout session");
+                location.href = "{{ url_for('shop.shop') }}"
                 return;
             }
-
-            console.log(data);
 
             return data.client_secret;
         };
@@ -30,10 +28,16 @@
         };
 
         const wrapInitEmbeddedCheckout = async () => {
-            const checkout = await stripe.initEmbeddedCheckout({
-                fetchClientSecret,
-            });
-            checkout.mount('#stripe-checkout')
+            try{
+                const checkout = await stripe.initEmbeddedCheckout({
+                    fetchClientSecret,
+                });
+
+                checkout.mount('#stripe-checkout')
+            } catch (e){
+                console.log(e);
+                return;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', wrapInitEmbeddedCheckout);
