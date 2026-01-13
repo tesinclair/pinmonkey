@@ -1,0 +1,29 @@
+FROM php:8.4-fpm as base
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y libpq-dev git unzip && \
+    docker-php-ext-install pdo_pgsql opcache && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+WORKDIR /var/www
+
+COPY composer.lock composer.json ./
+RUN composer install --no-interaction --prefer-dist --no-scripts
+
+COPY . .
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+FROM base AS test
+ENV APP_ENV=testing
+CMD ["php", "artisan", "test"]
+
+FROM base AS dev
+ENV APP_ENV=local
+ENV APP_DEBUG=true
+
+FROM base AS prod
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
